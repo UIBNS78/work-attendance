@@ -29,3 +29,11 @@ export const SignupSchema = yup.object({
     .oneOf([yup.ref("password"), null], "Password must match")
     .required("Please fill this field"),
 });
+
+export const LoginSchema = yup.object({
+  username: yup
+    .string()
+    .min(2, "Must be more than 2 characters.")
+    .required("Fill the username field"),
+  password: yup.string().required("Password is required"),
+});

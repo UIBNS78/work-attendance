@@ -53,3 +53,7 @@ code {
 .center {
   justify-content: center;
 }
+
+.avatar {
+  width: 50px;
+}

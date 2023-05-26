@@ -8,8 +8,13 @@ import axios from "axios";
 import { env } from "../../env/env";
 import SimpleSnackbar from "../../utils/common/snack-bar";
 import { useState } from "react";
+import { redirect, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../../redux/reducers/user.reducer";
 
 export const Signup = ({ title }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [snack, setSnack] = useState({
     open: false,
     type: "info",
@@ -25,33 +30,39 @@ export const Signup = ({ title }) => {
       confirmPassword: "",
     },
     validationSchema: SignupSchema,
-    onSubmit: async (values, actions) => {
-      await axios
-        .post(`${env.URL_API}/users/signup`, values)
-        .then((result) => {
-          if (result["data"]["success"]) {
-            actions.resetForm();
-            setSnack({
-              open: true,
-              type: "success",
-              message: result["data"]["message"],
-            });
-          } else {
-            setSnack({
-              open: true,
-              type: "warning",
-              message: result["data"]["message"],
-            });
-          }
-        })
-        .catch((reason) =>
-          setSnack({ open: true, type: "error", message: reason.message })
-        )
-        .finally(() => {
-          actions.setSubmitting(false);
-        });
-    },
+    onSubmit: (values, actions) => onSubmit(values, actions),
   });
+
+  const onSubmit = async (values, actions) => {
+    await axios
+      .post(`${env.URL_API}/users/signup`, values)
+      .then((result) => {
+        if (result["data"]["success"]) {
+          const user = result["data"]["result"]["user"];
+          const token = result["data"]["result"]["token"];
+          dispatch(login({ user, token }));
+          actions.resetForm();
+          setSnack({
+            open: true,
+            type: "success",
+            message: result["data"]["message"],
+          });
+          navigate("/chat");
+        } else {
+          setSnack({
+            open: true,
+            type: "warning",
+            message: result["data"]["message"],
+          });
+        }
+      })
+      .catch((reason) =>
+        setSnack({ open: true, type: "error", message: reason.message })
+      )
+      .finally(() => {
+        actions.setSubmitting(false);
+      });
+  };
 
   return (
     <>
@@ -138,6 +149,11 @@ export const Signup = ({ title }) => {
       </form>
     </>
   );
+};
+
+export const signupLoader = () => {
+  const connected = Boolean(sessionStorage.getItem("Authorization"));
+  return connected ? redirect("/chat") : null;
 };
 
 export default Signup;

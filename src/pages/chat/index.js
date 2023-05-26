@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, redirect } from "react-router-dom";
 import ListChat from "../../components/chat/list-chat";
 
 export class Chat extends Component {
@@ -35,5 +35,10 @@ export class Chat extends Component {
     );
   }
 }
+
+export const charLoader = () => {
+  const connected = Boolean(sessionStorage.getItem("Authorization"));
+  return !connected ? redirect("/login") : null;
+};
 
 export default Chat;
